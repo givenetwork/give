@@ -12,7 +12,8 @@ import {
 import Database from '../Database';
 import StellarSdk from 'stellar-sdk';
 
-const database = Database()
+const database = new Database()
+      , ipfs = database.ipfs
 
 // Stellar
 const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org')
@@ -23,6 +24,7 @@ const stellarServer = new StellarSdk.Server('https://horizon-testnet.stellar.org
 class Login extends React.Component {
 
   constructor(props){
+
     super(props);
     this.state = {
       register: 0,
@@ -106,14 +108,14 @@ class Login extends React.Component {
 
         // 3 - Write user data
 
-        node.id(function (err, identity) {
+        ipfs.id(function (err, identity) {
           if (err) {
             throw err
           }
-          console.log("Node ready", identity)
+          console.log("ipfs ready", identity)
         });
 
-        node.swarm.addrs(function (err, addrs) {
+        ipfs.swarm.addrs(function (err, addrs) {
           if (err) {
             throw err
           }
@@ -122,24 +124,42 @@ class Login extends React.Component {
 
         // 3.1 - User JSON
 
-        var data = JSON.stringify({
+        var userdata = JSON.stringify({
           username: this.state.username,
           email: this.state.email,
-          dataAccount: keys.publicKey(),
+          stellarAccount: keys.publicKey(),
           wallet: this.state.stellarAddress,
           created: new Date()
         });
 
+        var channeldata = JSON.stringify({
+          "default" : {
+            "id" : this.state.username + '_default',
+            "title" : this.state.username + " Default Portfolio",
+            "vectors" : {
+              "@" : 1
+            }
+          }
+        });
+
+        var userfile = new File([userdata], "/user.json");
+        var channelfile = new File([channeldata], "/channels.json");
+
         // 3.2 - Write JSON to IPFS
 
-        var file = new File([data], "user.json");
+        var files = [
+          {
+            path: userfile.path,
+            content: Buffer.from(userdata)
+          },
+          {
+            path: channelfile.path,
+            content: Buffer.from(channeldata)
+          }
+          // TODO: Folder object needed here?
+        ]
 
-        var files = [{
-          path: file.name,
-          content: Buffer.from(data)
-        }]
-
-        node.files.add(files, (err, filesAdded) => {
+        ipfs.files.add(files, (err, filesAdded) => {
           if (err) {
             return console.error('Error - ipfs files add', err, res)
           }

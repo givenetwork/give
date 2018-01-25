@@ -3,27 +3,30 @@ import Ipfs from 'ipfs';
 // TODO: Implement OrbitDb later
 // import OrbitDB from 'orbit-db';
 
-export default() => {
+export default class Database {
 
-    let ipfs, orbitdb, db
+    constructor() {
 
-    const ipfsOptions = {
-      EXPERIMENTAL: {
-        pubsub: true
-      },
-    }
+      let ipfs
 
-    ipfs = new Ipfs(ipfsOptions)
-    window.Buffer = ipfs.types.Buffer
+      const ipfsOptions = {
+        EXPERIMENTAL: {
+          pubsub: true
+        },
+      }
 
-    ipfs.on('error', (e) => console.log(e))
-    ipfs.on('ready', async () => {
-      ipfs.id(function (err, identity) {
-        if (err) {
-          throw err
-        }
-        console.log("IPFS Ready", identity)
+      this.ipfs = new Ipfs(ipfsOptions)
+      window.Buffer = this.ipfs.types.Buffer
+
+      this.ipfs.on('error', (e) => console.log(e))
+      this.ipfs.on('ready', async () => {
+        this.ipfs.id(function (err, identity) {
+          if (err) {
+            throw err
+          }
+          console.log("IPFS Ready", identity)
+        })
       })
-    })
+    }
 
 }
