@@ -1,0 +1,11 @@
+body {
+  font-family: 'Roboto', Helvetica, _sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+.loginForm,
+.loginTitle {
+  margin: auto;
+  max-width: 256px;
+}
