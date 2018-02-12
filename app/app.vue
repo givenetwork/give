@@ -1,37 +1,20 @@
 <template>
-  <div class="app">
-    <p>Vue-Parcel Starterkit 📦</p>
+  <div>
+    <Nav></Nav>
+    <router-view></router-view>
   </div>
 </template>
 
 <script>
-  import './styles/base.scss';
+import Nav from './Nav.vue';
 
-  export default {
-    name: 'app',
-    components: {
-    },
-    data() {
-      return {
-      };
-    },
-    methods: {
-    },
-    mounted() {
-    },
-  };
-</script>
-
-<style lang="scss">
-p {
-  padding: 8px 20px 10px;
-  border-radius: 10px;
-  display: inline-block;
-  color: white;
-  background-color: #1b1b1b;
-  font-size: 14px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+export default {
+	components: {
+		Nav
+	}
 }
-</style>
+
+if (module.hot) {
+  module.hot.accept();
+}
+</script>
