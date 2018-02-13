@@ -1,7 +1,7 @@
 <template>
-<div class="uk-margin-large">
+<div class="uk-padding">
 
-  <form class="uk-form-width-large uk-form-stacked uk-align-center" @submit.prevent>
+  <form class="uk-form-width-large uk-align-center" @submit.prevent>
 
       <h2>{{ $route.meta.title }}</h2>
 
@@ -9,81 +9,153 @@
 
         <div class="uk-margin">
             <div class="uk-inline uk-width-1-1">
-                <span class="uk-form-icon" uk-icon="icon: lock"></span>
-                <input class="uk-input" v-model="passphrase_login" type="text" placeholder="Your passphrase">
+                <span class="uk-form-icon" uk-icon="icon: user"></span>
+                <input class="uk-input" v-model="username" type="text" placeholder="Username">
             </div>
         </div>
 
-        <button class="uk-button uk-button-primary uk-width-1-1" @click="login">Submit</button>
+        <div class="uk-margin">
+            <div class="uk-inline uk-width-1-1">
+                <span class="uk-form-icon" uk-icon="icon: lock"></span>
+                <input class="uk-input" v-model="password" type="password" placeholder="Password" autocomplete="">
+            </div>
+        </div>
+
+        <div v-if="$route.path=='/account/signup'">
+
+        </div>
+
+        <button class="uk-button uk-button-primary uk-width-1-1" @click="submit">{{ $route.meta.title }}</button>
 
       </div>
 
-      <div class="uk-text-center">
+      <div v-if="$route.path=='/account/login'" class="uk-text-center">
         <p>No account yet?</p>
 
-        <button class="uk-button uk-button-default uk-width-1-1 uk-button-large" @click="newAccount">Create New Account</button>
-
+        <router-link to="/account/signup" tag="button" class="uk-button uk-button-default uk-width-1-1 uk-button-large">Create New Account</router-link>
       </div>
 
-      <div id="newaccount" uk-modal>
-          <div class="uk-modal-dialog">
-              <div class="uk-modal-body">
-                <h2 class="uk-modal-title">Success!</h2>
-                <p>Your new account has been created!</p>
-                <div class="uk-margin">
-                  <label class="uk-form-label uk-text-uppercase">Your Passphrase</label>
-                  <textarea class="uk-textarea uk-margin-small-bottom uk-width-1-1 uk-padding-small" v-model="passphrase" placeholder="Your passphrase" rows="3"></textarea>
-                  <button class="uk-button uk-button-default uk-width-1-1" type="button">Copy to Clipboard</button>
-                </div>
-                <div class="uk-margin">
-                  <label class="uk-form-label uk-text-uppercase">Your Give Stellar Address</label>
-                  <div class="uk-inline uk-width-1-1">
-                      <span class="uk-form-icon" uk-icon="icon: bolt"></span>
-                      <input class="uk-input" v-model="publicKey" type="text">
+      <div v-if="$route.path=='/account/signup'" class="uk-text-center">
+        Already have an account? <router-link to="/account/login">Login</router-link>
+
+        <div id="newaccount" uk-modal>
+            <div class="uk-modal-dialog">
+                <div class="uk-modal-body">
+                  <h2 class="uk-modal-title">Success!</h2>
+                  <p>Your new account has been created!</p>
+                  <div class="uk-margin">
+                    <label class="uk-form-label uk-text-uppercase">Your Passphrase</label>
+                    <textarea class="uk-textarea uk-margin-small-bottom uk-width-1-1 uk-padding-small" v-model="passphrase" placeholder="Your passphrase" rows="3"></textarea>
+                    <button class="uk-button uk-button-default uk-width-1-1" type="button">Copy to Clipboard</button>
                   </div>
+                  <div class="uk-margin">
+                    <label class="uk-form-label uk-text-uppercase">Your Give Stellar Address</label>
+                    <div class="uk-inline uk-width-1-1">
+                        <span class="uk-form-icon" uk-icon="icon: bolt"></span>
+                        <input class="uk-input" v-model="publicKey" type="text">
+                    </div>
+                  </div>
+                  <p>Make sure to copy and securely store your passphrase before closing this window!</p>
+                  <button class="uk-button uk-button-primary uk-width-1-1 uk-modal-close" type="button">I've done it! Close the window</button>
                 </div>
-                <p>Make sure to copy and securely store your passphrase before closing this window!</p>
-                <button class="uk-button uk-button-primary uk-width-1-1 uk-modal-close" type="button">I've done it! Close the window</button>
-              </div>
-          </div>
+            </div>
+        </div>
+
       </div>
 
   </form>
-
 </div>
 </template>
 
 <script>
+import Util from '../Util'
 import StellarHDWallet from 'stellar-hd-wallet'
-import StellarSdk from 'stellar-sdk'
-import Datastore from '../Datastore'
-import { mapGetters, mapActions } from 'vuex'
+
+const user = Util.user
 
 export default {
+  store: [
+    'user',
+    'messages'
+  ],
+  // created: function() {
+  //
+  // },
   data: function() {
     return {
-      passphrase: '',
-      passphrase_login: '',
-      publicKey: ''
+      username: '',
+      password: '',
+      email: ''
     }
   },
   methods: {
-    login: function() {
-      Datastore.dispatch('login', { username: this.username, password: this.password })
+    login: function(username, password) {
+      username = username || this.username
+      password = password || this.password
+      user.auth(username, password, this.onLoginSuccess)
     },
-    newAccount: function() {
-      const mnemonic = StellarHDWallet.generateMnemonic()
-      const wallet = StellarHDWallet.fromMnemonic(mnemonic)
+    onLoginSuccess: function(ack) {
+      if(!ack.err) {
+        this.user = {
+          username: ack.alias,
+          id: ack.id
+        }
+        this.messages.setMessage("Login successful", "success", "LOGIN")
+      }
+      else {
+        this.messages.setMessage("Login error", "danger", "LOGIN")
+      }
+    },
+    signup: function(username, password) {
+      user.create(username, password, this.onSignupSuccess)
+    },
+    onSignupSuccess: function(ack) {
 
-      this.passphrase = mnemonic;
-      this.publicKey = wallet.getPublicKey(0);
+        if(!!!ack.err) {
 
-      UIkit.modal('#newaccount').show();
+          const mnemonic = StellarHDWallet.generateMnemonic()
+          const wallet = StellarHDWallet.fromMnemonic(mnemonic)
+
+          var result = user.get('stellar').put({
+            publicKey: wallet.getPublicKey(0),
+            secret: wallet.getSecret(0) //TODO: gun.SEA.enc(...) this
+          })
+
+          this.passphrase = mnemonic
+          this.publicKey = wallet.getPublicKey(0)
+
+          this.messages.setMessage("User succesfully registered!", "success", "SIGNUP")
+
+          this.login(this.username, this.password)
+        }
+        else {
+          this.messages.setMessage(ack.err, "danger", "LOGIN")
+        }
+    },
+    submit: function() {
+      var error = "";
+      if(!this.username) {
+        error += "Username is required. ";
+      }
+
+      if(!this.password) {
+        error += "Password is required. ";
+      }
+
+      if(error) {
+        this.messages.setMessage(error)
+        return false
+      }
+
+      var action = this.$route.path=='/account/signup' ? 'signup' : 'login';
+
+      if(action=='login') {
+        this.login(this.username, this.password )
+      }
+      else {
+        this.signup(this.username, this.password)
+      }
     }
   }
-}
-
-if (module.hot) {
-  module.hot.accept();
 }
 </script>
