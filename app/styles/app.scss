@@ -3,3 +3,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+textarea {
+  resize: none;
+  font-family: Consolas,monaco,monospace !important;
+}

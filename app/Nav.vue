@@ -9,7 +9,7 @@
             <router-link tag="li" to="/"><a>About</a></router-link>
             <router-link active-class="uk-active" tag="li" to="/channels"><a>Channels</a></router-link>
             <router-link v-if="user" active-class="uk-active" tag="li" to="/dashboard"><a>Dashboard</a></router-link>
-            <router-link v-if="!user" active-class="uk-active" tag="li" to="/account/login"><a><span class="uk-logo uk-icon" uk-icon="icon: user"></span></a></router-link>
+            <router-link v-if="!user" active-class="uk-active" tag="li" to="/account"><a><span class="uk-logo uk-icon" uk-icon="icon: user"></span></a></router-link>
         </ul>
 
     </div>
