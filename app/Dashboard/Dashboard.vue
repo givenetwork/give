@@ -1,32 +1,32 @@
 <template>
-  <div class="uk-container uk-padding">
-    <h1>Dashboard</h1>
-    {{privateChannelCache}}
-    <div uk-grid>
-      <div class="uk-width-1-3@m">
-        <div class="uk-alert uk-alert-default">
-          <p>Private channels: 3</p>
+  <div>
+    <div class="uk-container uk-padding">
+      <h1>Dashboard</h1>
+      <!-- {{privateChannelCache}} -->
+      <!-- <div uk-grid> -->
+        <!-- <div class="uk-width-1-3@m">
+          <div class="uk-alert uk-alert-default">
+            <p>Private channels: 3</p>
 
-          <span v-for="pc in privateChannels"  v-if="privateChannels">
-            {{ pc.name }}
-          </span>
-        </div>
-      </div>
-      <div class="uk-width-2-3@m">
-        <ul class="uk-breadcrumb" v-if="this.channelTree.backup">
-            <li><a href="#">@{{user.username}}</a></li>
-            <li v-for="item in this.channelTree.backup">
-              <a href="#">{{ item.name }}</a>
-            </li>
-        </ul>
+            <span v-for="pc in privateChannels"  v-if="privateChannels">
+              {{ pc.name }}
+            </span>
+          </div>
+        </div> -->
+        <!-- <div class="uk-width-2-3@m"> -->
 
-        <table>
-          <tr colspan="2">
-            <ChannelItem :node="channelTree.data" :level="1" :history="!!this.channelTree.backup.length" :resetTree="resetTree"/>
-          </tr>
-        </table>
-
-      </div>
+        <!-- </div> -->
+      <!-- </div> -->
+    </div>
+    <a v-if="this.channelTree.backup.length"  @click="restoreToItem" class="uk-button uk-button-secondary uk-width-1-1 button-tree-up">LEVEL UP <span class="uk-icon" uk-icon="icon: chevron-up"></span></a>
+    <div class="uk-background-muted uk-padding">
+      <ul class="uk-breadcrumb" v-if="this.channelTree.backup.length">
+          <li v-for="(item, key) in this.channelTree.backup">
+            <a href="#" @click="restoreToItem(key)">{{ item.name }}</a>
+          </li>
+          <li><span>{{ channelTree.data.name }}</span></li>
+      </ul>
+      <ChannelItem :node="channelTree.data" :level="1" />
     </div>
   </div>
 </template>
@@ -40,28 +40,31 @@ var _ = require('lodash')
 var data = {
   name: 'a483n4c (Default)',
   children: [
-    { name: 'A1', score: 2},
-    { name: 'A2', score: 5},
+    { name: '@mikefair', score: 2, type: 'user' },
+    { name: '@klemen', score: 5, type: 'user' },
     {
-      name: 'C1',
+      name: '#greenpeace',
       score: 3,
+      type: 'channel',
       children: [
         {
-          name: 'C2',
+          name: '#greenpeace-east',
           score: 100,
+          type: 'channel',
           children: [
-            { name: 'AX', score: 1 },
-            { name: 'AY', score: 3 }
+            { name: '@waf3901', score: 1, type: 'user' },
+            { name: '@boona4900003', score: 3, type: 'user' }
           ]
         },
-        { name: 'A3', score: 200},
-        { name: 'A4', score: 300 },
+        { name: '@alligatorguy', score: 200, type: 'user'},
+        { name: '@janegoodall', score: 300, type: 'user' },
         {
-          name: 'CX',
+          name: '#gp-west',
           score: 250,
+          type: 'channel',
           children: [
-            { name: 'A5', score: 9},
-            { name: 'A6', score: 5 }
+            { name: '@nonrra', score: 9, type: 'user'},
+            { name: '@good4all', score: 5, type: 'user' }
           ]
         }
       ]
@@ -75,9 +78,11 @@ export default {
     'messages',
     'channelTree'
   ],
+  beforeMount() {
+    this.channelTree.data = data
+  },
   mounted() {
     console.log("Dashboard mounted")
-    this.channelTree.data = data
 
     Util.user.get('channels').map().on(this.addPrivateChannel)
 
@@ -105,7 +110,14 @@ export default {
     }
   },
   methods: {
-    resetTree: function() {
+    resetTree() {
+      this.channelTree.data = this.channelTree.backup[0]
+      this.channelTree.backup = []
+    },
+    restoreToItem(index) {
+      if(index) {
+        this.channelTree.backup.splice(index, -1)
+      }
       this.channelTree.data = this.channelTree.backup.pop()
     },
     addPrivateChannel: function(data, key) {

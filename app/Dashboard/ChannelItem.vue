@@ -1,37 +1,27 @@
 <template>
-  <td v-bind:style="{ 'width': childWeight + '%' }">
-    <div class="uk-flex">
-      <a v-if="history"  @click="resetTree" class="uk-button uk-button-primary uk-width-auto button-tree-up"><span class="uk-icon" uk-icon="icon: chevron-left"></span></a>
-      <div class="uk-card uk-card-default uk-width-expand">
-          <div class="uk-padding-small">
-              <div class="uk-grid-small uk-flex-middle" uk-grid>
-                  <div class="uk-width-expand">
-                      <h3 class="uk-card-title uk-text-left uk-margin-remove-bottom">
-                        <b>{{node.name}}</b>
-                      </h3>
-                      <!-- <p class="uk-text-meta uk-margin-remove-top"><time datetime="2016-04-01T19:00">April 01, 2016</time></p> -->
-                  </div>
-                  <div class="uk-width-auto" v-if="!!childWeight">
-                    <span class="uk-button uk-button-default uk-button-round">
-                      {{ childWeight }}%
-                    </span>
-                  </div>
+  <div class="channel-item">
+    <div class="uk-margin-bottom" v-bind:class="{'uk-card uk-card-default' : level>1 }" v-bind:style="{ width: itemWidth + '%' }">
+        <div class="uk-flex">
+            <div class="uk-width-expand uk-padding-small">
+                <h3 class="uk-card-title uk-text-left uk-margin-remove-bottom">
+                  <b>{{node.name}}</b>
+                </h3>
+                <!-- <p class="uk-text-meta uk-margin-remove-top"><time datetime="2016-04-01T19:00">April 01, 2016</time></p> -->
+            </div>
+            <div class="uk-width-auto uk-text-right uk-padding-small" v-if="level>1">
+              <div class="">
+                <span class="uk-hidden@m uk-margin-small-right">{{ itemWeight }}%</span>
+                <a href="#" class="uk-button uk-button-default uk-button-round"><span class="uk-icon" uk-icon="icon: pencil"></span></a>
+                <a href="#" class="uk-button uk-button-primary uk-button-round" v-if="node.children" @click="makeTop(node)"><span class="uk-icon" uk-icon="icon: chevron-right"></span></a>
               </div>
-          </div>
-          <div class="uk-card-footer uk-padding-small" v-if="level>1">
-              <a href="#" class="uk-button uk-button-default uk-button-round"><span class="uk-icon" uk-icon="icon: pencil"></span></a>
-              <a href="#" class="uk-button uk-button-primary uk-button-round" v-if="node.children"><span class="uk-icon" uk-icon="icon: plus" @click="makeTop(node)"></span></a>
-          </div>
-      </div>
+            </div>
+            <div class="uk-visible@m uk-button uk-width-auto uk-flex uk-flex-middle channel-item--expand" v-if="!!itemWeight" v-bind:class="{ 'uk-button-primary': node.type=='channel', 'uk-button-secondary': node.type=='user'}">
+                {{ itemWeight }}%
+            </div>
+        </div>
     </div>
-    <table class="uk-table" v-if="level<2">
-      <tbody>
-        <tr>
-          <ChannelItem :node="child" :parentScoreTotal="totalScore" v-for="child in node.children" :level="level+1" />
-        </tr>
-      </tbody>
-    </table>
-  </td>
+    <ChannelItem :node="child" :parentScoreTotal="totalScore" :parentScoreMax="maxScore" v-for="child in sortedChildren" :level="level+1" v-if="level<2"/>
+  </div>
 </template>
 
 <script>
@@ -46,25 +36,37 @@ export default {
   props: {
     node: Object,
     parentScoreTotal: Number,
+    parentScoreMax: Number,
     level: Number,
-    resetTree: Function,
-    history: Object
+    resetTree: Function
   },
   data: function () {
     return {
-      open: false,
-      totalScore: _.sumBy(this.node.children, 'score' )
+      open: false
     }
   },
   computed: {
-    isFolder: function () {
+    isFolder() {
       return this.node.children &&
         this.node.children.length
     },
-    childWeight: function() {
+    itemWeight() {
       if(!this.parentScoreTotal) return false
       var width = (100 * this.node.score / this.parentScoreTotal).toFixed(0)
       return width ? width : 100
+    },
+    itemWidth() {
+      var width = (15 + (85 * this.node.score / this.parentScoreMax)).toFixed(2)
+      return width
+    },
+    totalScore() {
+      return _.sumBy(this.node.children, 'score' )
+    },
+    maxScore() {
+      return _.maxBy(this.node.children, 'score').score
+    },
+    sortedChildren() {
+      return _.orderBy(this.node.children, 'score', 'desc')
     }
   },
   methods: {
@@ -72,9 +74,6 @@ export default {
       if (this.isFolder) {
         this.open = !this.open
       }
-    },
-    itemPercentage: function(score) {
-      console.log(this.totalWeight)
     },
     makeTop: function(data) {
       this.channelTree.backup.push(this.channelTree.data)

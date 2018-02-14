@@ -33,13 +33,14 @@ textarea {
   width: 45px;
   height: 45px;
 }
-
-.button-tree-up {
-  box-shadow: 0 5px 15px rgba(0,0,0,.08);
-  .uk-icon {
-    height: 0;
-    vertical-align: middle;
-  }
+.uk-button-round-large {
+  border-radius: 100px;
+  -moz-border-radius: 100px;
+  -webkit-border-radius: 100px;
+  padding: 2px;
+  width: 60px;
+  height: 60px;
+  line-height: 50px;
 }
 
 
