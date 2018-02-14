@@ -8,3 +8,45 @@ textarea {
   resize: none;
   font-family: Consolas,monaco,monospace !important;
 }
+
+.version-label {
+  margin-left: 0.2em;
+  font-size: 0.5em !important;
+  background: rgba(255,255,255,0.1) !important;
+  color: white !important;
+}
+
+.uk-table {
+  table-layout:fixed;
+
+  td {
+    padding: 2px;
+    text-align: center;
+  }
+}
+
+.uk-button-round {
+  border-radius: 100px;
+  -moz-border-radius: 100px;
+  -webkit-border-radius: 100px;
+  padding: 2px;
+  width: 45px;
+  height: 45px;
+}
+
+.button-tree-up {
+  box-shadow: 0 5px 15px rgba(0,0,0,.08);
+  .uk-icon {
+    height: 0;
+    vertical-align: middle;
+  }
+}
+
+
+@media(max-width: 800px) {
+  td.expandOnMobile {
+    width: 100% !important;
+    display: block;
+    text-align: center;
+  }
+}

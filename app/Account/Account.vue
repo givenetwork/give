@@ -78,38 +78,41 @@ export default {
     'user',
     'messages'
   ],
-  // created: function() {
-  //
-  // },
   data: function() {
     return {
       username: '',
       password: '',
-      email: ''
+      email: '',
+      passphrase: '',
+      publicKey: ''
     }
   },
   methods: {
-    login: function(username, password) {
+    login(username, password) {
       username = username || this.username
       password = password || this.password
       user.auth(username, password, this.onLoginSuccess)
     },
-    onLoginSuccess: function(ack) {
+    onLoginSuccess(ack) {
       if(!ack.err) {
+
+        // Store User Data
+
         this.user = {
           username: ack.alias,
           id: ack.id
         }
         this.messages.setMessage("Login successful", "success", "LOGIN")
+        this.$router.push("/dashboard")
       }
       else {
         this.messages.setMessage("Login error", "danger", "LOGIN")
       }
     },
-    signup: function(username, password) {
+    signup(username, password) {
       user.create(username, password, this.onSignupSuccess)
     },
-    onSignupSuccess: function(ack) {
+    onSignupSuccess(ack) {
 
         if(!!!ack.err) {
 
@@ -124,6 +127,8 @@ export default {
           this.passphrase = mnemonic
           this.publicKey = wallet.getPublicKey(0)
 
+          UIkit.modal("#newaccount").show()
+
           this.messages.setMessage("User succesfully registered!", "success", "SIGNUP")
 
           this.login(this.username, this.password)
@@ -132,7 +137,10 @@ export default {
           this.messages.setMessage(ack.err, "danger", "LOGIN")
         }
     },
-    submit: function() {
+    submit() {
+
+      this.messages.clearAll()
+
       var error = "";
       if(!this.username) {
         error += "Username is required. ";

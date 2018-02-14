@@ -16,15 +16,19 @@ Vue.use(VueRouter)
 
 Vue.config.productionTip = false
 
+var app
+
+// TODO: do this better globally (for now the important components check for auth)
+export function requireAuth(to, from, next) {
+  next()
+}
+
 const routes = [
-  {path: '/', component: About},
+  {path: '*', component: About},
   {path: '/account/login', component: Account, meta: { title: 'Login'}},
   {path: '/account/signup', component: Account, meta: { title: 'Create New Account'}},
-  {path: '/channels', component: Channels, children: [
-      { path: 'new', component: Channel },
-      { path: ':id', component: Channel },
-    ]
-  },
+  {path: '/channels', component: Channels },
+  {path: '/channels/:id', component: Channel },
   {path: '/channels/:id/:action', component: Channel},
   {path: '/dashboard', component: Dashboard},
 ]
@@ -34,6 +38,7 @@ const router = new VueRouter({
 })
 
 window.onload = () => {
+
   /* eslint-disable */
   new Vue({
     /* eslint-enable */
@@ -42,6 +47,10 @@ window.onload = () => {
     data: {
       store: {
           user: false,
+          channelTree: {
+            backup: [],
+            data: {}
+          },
           messages: {
             list: [],
             setMessage(message, messageClass="danger") {
@@ -49,15 +58,25 @@ window.onload = () => {
             },
             clearMessage(index) {
               this.list.splice(index)
+            },
+            clearAll() {
+              this.list = []
             }
+          },
+          channels: {
+              list: [],
+              addChannel(channel) {
+                this.list.push()
+              }
+          },
+          privateChannels: {
+            list: []
           }
       }
     },
-    methods: {
-
-    },
     router
-  });
+  })
+
 };
 
 if (module.hot) {
