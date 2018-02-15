@@ -44,10 +44,13 @@ textarea {
 }
 
 
-@media(max-width: 800px) {
-  td.expandOnMobile {
-    width: 100% !important;
-    display: block;
-    text-align: center;
+.channel-tree--view {
+  border-top: 1px solid #EFEFEF;
+  border-bottom: 1px solid #EFEFEF;
+}
+
+@media(max-width:900px) {
+  .channel-item--card {
+    width: 80% !important;
   }
 }
