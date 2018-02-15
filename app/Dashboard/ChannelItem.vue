@@ -34,7 +34,7 @@
           </div>
         </div>
       </div>
-      <div class="uk-flex-none uk-padding-small">
+      <div class="uk-flex-none uk-padding-small channel-item--tools">
         <a class="uk-button uk-button-default uk-button-round" v-if="node.children" @click="makeRootCall"><span class="uk-icon" uk-icon="icon: chevron-right"></span></a>
       </div>
     </div>
@@ -69,7 +69,7 @@ export default {
       return width ? width : 100
     },
     itemWidth() {
-      var width = (15 + (78 * this.node.score / this.node.parentMaxScore)).toFixed(2)
+      var width = (20 + (80 * this.node.score / this.node.parentMaxScore)).toFixed(2)
       return width
     }
   },
