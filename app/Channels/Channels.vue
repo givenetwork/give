@@ -2,28 +2,14 @@
   <div class="uk-container uk-padding">
     <h1>Channels</h1>
 
-    <div class="uk-grid-medium uk-child-width-1-2@s uk-child-width-1-4@m uk-text-center" uk-grid>
-      <div v-for="channel in channelList">
-        <div class="uk-card uk-card-default">
-          <div class="uk-card-body">
-            {{channel.title}}
-
-            <span v-for="pc in privateChannels" v-if="privateChannels">
-              {{ pc.name }}
-            </span>
-          </div>
-          <div class="uk-card-footer">
-            <router-link :to="{ path: 'channels/' + channel.id }" class="uk-button uk-button-text uk-width-1-1">View Channel</router-link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ChannelList :channels="channelList" />
 
   </div>
 </template>
 
 <script>
 import Util from '../Util'
+import ChannelList from './ChannelList'
 var _ = require('lodash');
 
 export default {
@@ -38,21 +24,24 @@ export default {
     }
   },
   methods: {
-    addChannel: function(data, key) {
-      if(key && data.title) {
-        data.key = key
-        this.channelCache[key] = data
-      }
-    }
+    // addChannel: function(data, key) {
+    //   console.log(data, key)
+    //   // Check if data is an object
+    //   // if(!!key && typeof data == 'object') {
+    //     this.channelCache.push(data)
+    //   // }
+    // }
   },
-  mounted() {
-    Util.channels.map().on(this.addChannel)
+  // beforeMount() {
+  //   // Util.channels.map().on(this.addChannel)
+  // },
+  components: {
+    ChannelList
   },
   computed: {
-    channelList: function() {
-      this.channels = _.chain(this.channelCache).keyBy('key').value()
-      return this.channels
-    }
+    // channelList: function() {
+    //   return _.keyBy(this.channelCache, 'id')
+    // }
   }
 }
 </script>

@@ -1,81 +1,162 @@
 <template>
-  <div class="uk-padding">
+  <div class="uk-background-muted">
 
-    <form class="uk-form-width-large uk-align-center" @submit.prevent>
+      <div class="uk-text-center uk-padding">
 
-        <h2>{{ title }}</h2>
+        <h2>
+          <form @submit="loadChannel" @submit.prevent v-if="!isNew">
+            <input v-model="loadChannelId" name="loadChannelId" type="text" class="uk-input uk-padding-small uk-text-center" placeholder="Channel ID / URL" key="loadChannel" />
+          </form>
 
-        <div uk-alert>
+          <input v-model="channelTree.name" name="channelName" type="text" class="uk-input uk-padding-small uk-text-center" placeholder="Channel name" key="newChannel" v-if="isNew" />
+        </h2>
+        <a @click.stop="newChannel" v-if="!isNew && !channelTree.entries">Start from scratch</a>
 
-          <div class="uk-margin">
-            <input class="uk-input" v-model="channel.name" type="text" placeholder="Channel name">
-          </div>
+      </div>
 
-          <div class="uk-margin">
-            <textarea class="uk-textarea" v-model="channel.description" placeholder="Description"></textarea>
-          </div>
+      <template v-if="channelTree && channelTree.entries">
 
-          <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
-            <label><input class="uk-checkbox" type="checkbox" v-model="channel.private"> Channel is Private</label>
-          </div>
+        <span class="uk-float-right uk-margin-medium-right" @click="viewCode=!viewCode" v-if="channelTree && channelTree.entries">
+          <a class="uk-button" v-bind:class="{ 'uk-button-primary': !viewCode, 'uk-button-default': viewCode }"><span class="uk-icon" uk-icon="social"></span></a>
+          <a class="uk-button" v-bind:class="{ 'uk-button-primary': viewCode, 'uk-button-default': !viewCode }"><span class="uk-icon" uk-icon="code"></span></a>
+        </span>
 
-          <button class="uk-button uk-button-primary uk-width-1-1" @click="submit">{{ action }}</button>
+        <template v-if="!viewCode">
+          <ChannelTree :node="channelTree" />
 
+            <form class="uk-grid-small uk-grid uk-padding uk-background-dark" uk-grid>
+              <input v-model="entryId" name="entryId" type="text" class="uk-input uk-width-2-3" placeholder="Paste GIVE ID or URL" />
+              <a @click.stop="addNewEntry" class="uk-button uk-button-primary uk-width-1-3 uk-margin-remove">Add Entry</a>
+            </form>
+        </template>
+
+        <div class="uk-padding" v-else>
+          <a class="uk-button uk-width-1-1 uk-button-primary uk-margin-top">Copy to Clipboard</a>
+          <code><textarea class="uk-textarea" v-model="beautifiedTree" rows="20" /></code>
         </div>
 
-    </form>
+      </template>
+
   </div>
 </template>
 
 <script>
-import Util from '../Util'
-const uuidv5 = require('uuid/v5')
-const gun = Util.gun
-const user = Util.user
-const channels = Util.channels
+import axios from 'axios'
+import NewChannel from './NewChannel'
+import ChannelTree from './ChannelTree'
+var _ = require('lodash')
+var beautify = require("json-beautify")
+
+let timer
 
 export default {
-  data: function() {
+  store: [
+    'user',
+    'messages'
+  ],
+  data() {
     return {
-      title: 'New Channel',
-      channel: {
-        name: '',
-        description: '',
-        private: 1
-      },
-      action: 'Save Channel'
+      pageTitle: 'Create or Load a Channel',
+      loadChannelId: "",
+      isNew: false,
+      addEntry: false,
+      channelTree: {},
+      viewCode: false
     }
   },
-  store: [
-    'user'
-  ],
-  created() {
-    if(!this.user) {
-        this.$router.push("/account/login")
-    }
+  beforeMount() {
+    // if(this.$route.params.id) != "new" {
+    //   var channel = gun.get('channel/' + id)
+    //   console.log(channel)
+    // }
+    // this.channelTree = portfolio
+    // this.channelTree.canEdit = 1
+    // this.pageTitle = portfolio.name
   },
   methods: {
-    submit() {
-      var channelUuid = uuidv5(this.channel.name, Util.uuidvRoot)
-      var channelKey = 'channel/' + channelUuid
-
-      console.log("Writting channel node", channelUuid)
-      var channelNode = gun.get(channelKey).put({
-        name: this.channel.name,
-        descrpition: this.channel.description,
-        private: this.channel.private
+    addNewEntry() {
+      this.channelTree.entries.push({
+        id: this.entryId,
+        score: 1
       })
-      console.log("Written", channelNode)
+    },
+    loadChannel() {
+      const id = this.loadChannelId
+      if(!id) return
 
-      // console.log("Setting channel owner")
-      // channelNode.path('owner').key(user.key)
-
-      console.log("Adding channel to owner's list")
-      user.get('channels').set(channelNode)
-      if(!this.channel.private) {
-        console.log("Adding channel to global group")
-        channels.set(channelNode)
+      let url
+      try {
+        url = new URL(id)
       }
+      catch(e) {
+        url = this.parseId(id)
+      }
+
+      axios.get(url)
+        .then((response) => {
+          this.channelTree = response.data
+          this.channelTree.id = id
+          this.channelTree.canEdit = 1
+        })
+        .catch((error) => {
+          // this.messages.setMessage("Error loading channel")
+        })
+    },
+    parseId(id) {
+      let url,
+          github = id.match(/github.com\/(.*)(\/.*)?/)
+
+      if(github && github.length && github[1]) {
+        // USER/ORG
+        if(github[1].indexOf("/", ) == -1) {
+            url = `https://rawgit.com/${github[1]}/give/master/.give`
+        }
+        // REPO
+        else {
+            url = `https://rawgit.com/${github[1]}/master/.give`
+        }
+        return url;
+      }
+
+      // TODO: IPFS
+      // TODO: Gitlab
+      // TODO: Twitter
+      // TODO: Facebook
+
+    },
+    newChannel() {
+      this.isNew = true
+      this.channelTree = {
+          "name": this.loadChannelId || "New channel",
+          "canEdit": 1,
+          "entries": []
+      }
+
+    }
+  },
+  components: {
+    NewChannel,
+    ChannelTree
+  },
+  computed: {
+    beautifiedTree() {
+      var entries = []
+      _.each(this.channelTree.entries, (e) => {
+        entries.push({ id: e.id, score: e.score })
+      })
+
+      var outputTree = {
+        name: this.channelTree.name,
+        entries: entries
+      }
+      return beautify(outputTree, null, 2, 100)
+    }
+  },
+  watch : {
+    loadChannelId(val) {
+      if(timer)
+        clearTimeout(timer)
+      timer = setTimeout(this.loadChannel, 1000)
     }
   }
 }

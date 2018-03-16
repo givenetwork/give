@@ -1,18 +1,25 @@
 'use strict'
 
+const VERSION = 'v0.1-poc'
+
+import axios from 'axios'
 import 'babel-polyfill'
 import VueRouter from 'vue-router'
+import VeeValidate from 'vee-validate'
 import App from './App.vue'
 
+import Home from './Pages/Home.vue'
 import About from './Pages/About.vue'
 import Account from './Account/Account.vue'
 import Channels from './Channels/Channels.vue'
 import Channel from './Channels/Channel.vue'
+import NewChannel from './Channels/NewChannel.vue'
 import Dashboard from './Dashboard/Dashboard.vue'
 
 import VueStash from 'vue-stash'
 Vue.use(VueStash)
 Vue.use(VueRouter)
+Vue.use(VeeValidate);
 
 Vue.config.productionTip = false
 
@@ -24,12 +31,14 @@ export function requireAuth(to, from, next) {
 }
 
 const routes = [
-  {path: '*', component: About},
+  {path: '*', component: Home},
+  {path: '/about', component: About},
   {path: '/account/login', component: Account, meta: { title: 'Login'}},
   {path: '/account/signup', component: Account, meta: { title: 'Create New Account'}},
   {path: '/channels', component: Channels },
-  {path: '/channels/:id', component: Channel },
-  {path: '/channels/:id/:action', component: Channel},
+  {path: '/channel', component: Channel },
+  // {path: '/channel/:id', component: Channel },
+  // {path: '/channel/:id/:action', component: Channel},
   {path: '/dashboard', component: Dashboard},
 ]
 
@@ -46,10 +55,14 @@ window.onload = () => {
     el: 'app',
     data: {
       store: {
-          user: false,
-          channelTree: {
-            backup: [],
-            data: {}
+          channels: {
+              list: [],
+              addChannel(channel) {
+                this.list.push()
+              }
+          },
+          privateChannels: {
+            list: []
           },
           messages: {
             list: [],
@@ -63,15 +76,8 @@ window.onload = () => {
               this.list = []
             }
           },
-          channels: {
-              list: [],
-              addChannel(channel) {
-                this.list.push()
-              }
-          },
-          privateChannels: {
-            list: []
-          }
+          user: false,
+          version: VERSION,
       }
     },
     router

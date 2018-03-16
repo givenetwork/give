@@ -119,10 +119,17 @@ export default {
           const mnemonic = StellarHDWallet.generateMnemonic()
           const wallet = StellarHDWallet.fromMnemonic(mnemonic)
 
+          console.log("Writing user stellar node")
           var result = user.get('stellar').put({
             publicKey: wallet.getPublicKey(0),
             secret: wallet.getSecret(0) //TODO: gun.SEA.enc(...) this
           })
+
+          console.log("Writing user profile node")
+          var userProfile = Util.gun.get('user/' + this.username).put({
+            stellarAddress: wallet.getPublicKey(0)
+          })
+          user.get('profile').put(userProfile)
 
           this.passphrase = mnemonic
           this.publicKey = wallet.getPublicKey(0)

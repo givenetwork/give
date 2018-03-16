@@ -1,8 +1,9 @@
-import request from 'request'
 import Ipfs from 'ipfs'
 import StellarSdk from 'stellar-sdk'
 import { STELLAR_SERVER_URL, ROOT_ORG_PATH, GUN_DB_URL } from './Constants'
 var _ = require('lodash');
+var shortHash = require('short-hash');
+var md5 = require('md5.js')
 
 const debug = false
 const stellarServer = new StellarSdk.Server(STELLAR_SERVER_URL)
@@ -15,22 +16,17 @@ const uuidvRoot = uuidv5(ROOT_ORG_PATH, uuidv5.DNS)
 
 // Seeds / Strings etc.
 
-const gun = Gun(GUN_DB_URL)
+// const gun = Gun(GUN_DB_URL)
+// const publicGun = Gun(GUN_DB_URL)
 const ipfs = new Ipfs()
 
-var channels = gun.get('channels')
+// var user = gun.user()
+// var channels = gun.get('channels')
 
-// localStorage.clear()
-
-// gun.get('channels/12345').put({ hidden: true })
-// gun.get('channel/12345').put({ hidden: false })
-// gun.get('channels/6789').put({ hidden: true })
-// gun.get('channel/6789').put({ hidden: false })
-// gun.get('channels').put({})
-// var c1 = gun.get('channels/12345').put({ title: "Chan ONE", description: "SOmeotherstuff", id: '4354gfe' })
-// var c2 = gun.get('channels/6789').put({ title: "DOIS", description: "Onds aa eo zouff", id: '9jdkn847' })
-// channels.set(c1);
-// channels.set(c2);
+// var node = gun.get('channel/fd47ac6c/link')
+// var nodeTarget = gun.get('channel/fd47ac6c')
+// var node = gun.get('channel/fd47ac6c/link').get('link').set(nodeTarget)
+// channels.set(node)
 
 // INSTANTIATE IPFS
 
@@ -52,13 +48,41 @@ ipfs.on('ready', async () => {
 
 const Util = {
 
-  gun: gun,
-  user: gun.user(),
-  channels: channels,
+  // gun: gun,
+  // user: user,
+  // publicGun: publicGun,
+  // channels: channels,
   stellarSdk: StellarSdk,
   stellarServer: stellarServer,
   ipfs: ipfs,
-  uuidvRoot: uuidvRoot
+  uuidvRoot: uuidvRoot,
+  createChannel(channel) {
+
+    // if(channel.private) {
+    //   channel.handle = shortHash('channel_' + Math.random())
+    // }
+    // var channelOrgPath = ROOT_ORG_PATH + '/channel/' + channel.handle
+    // channel.id = shortHash(channelOrgPath)
+    //
+    // var channelShortPath = 'channel/' + channel.id
+    //
+    // console.log("Writing channel node", channelShortPath)
+    // var publicNode = publicGun.get(channelShortPath).put(channel)
+    //
+    // console.log("Adding channel to owner's list")
+    // user.get('channels').get(channel.id).put(publicNode)
+    //
+    // if(!channel.private) {
+    //   console.log("Preparing link node")
+    //   var linkNode = publicGun.get(channelShortPath + '/link').put({
+    //     active: 1
+    //   })
+    //   publicGun.get(channelShortPath + '/link').get('link').set(publicNode)
+    //   console.log("Adding channel to global group")
+    //   publicGun.get('channels').set(linkNode)
+    // }
+
+  }
 
 }
 
